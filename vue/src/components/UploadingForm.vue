@@ -2,11 +2,19 @@
 import { onMounted, reactive } from 'vue';
 import Axios from 'axios';
 
-const apiBase = "http://localhost:9000";
-const axios = Axios.create({
-  baseURL: apiBase
-  // port: 9000
-});
+// const apiBase = "http://localhost:9000";
+// const apiBase = "/";
+const baseURL = location.href
+const axios = Axios.create({});
+
+const getFileLink = (filename: String) => {
+  if (!filename) {
+    return '';
+  }
+  const path = `/files/${filename}`;
+  const url = new URL(path, baseURL);
+  return url.href;
+}
 
 onMounted(async () => {
   // clearState()
@@ -58,8 +66,8 @@ const deleteFile = async (id: number) => {
 <template>
   <div class="d-flex">
     <section class="shadow m-5">
-      <div class="mb-2" v-for="{ id, link, name } in state.multipleField">
-        <a class="btn btn-primary" :href=link :download=name><span>{{ name }}</span></a>
+      <div class="mb-2" v-for="{ id, name } in state.multipleField">
+        <a class="btn btn-primary" :href=getFileLink(name) :download=name><span>{{ name }}</span></a>
         <a @click="deleteFile(id)" class="mx-2 btn btn-danger">X</a>
       </div>
       <div class="d-flex">
@@ -80,7 +88,7 @@ const deleteFile = async (id: number) => {
 
     <section class="shadow">
       <div v-if="state.simpleField" class="mb-2">
-        <a class="btn btn-primary" :href=state.simpleField.link :download=state.simpleField.name><span>{{
+        <a class="btn btn-primary" :href=getFileLink(state.simpleField.name) :download=state.simpleField.name><span>{{
             state.simpleField.name
         }}</span></a>
         <a @click="deleteFile(state.simpleField.id)" class="mx-2 btn btn-danger">X</a>

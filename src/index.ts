@@ -6,24 +6,17 @@ import { PrismaClient as Prisma } from '@prisma/client'
 
 const app = express();
 const prisma = new Prisma();
-const upload = multer({ dest: 'src/files' });
+const upload = multer({ dest: './files/' });
 
-const apiHost = "http://localhost";
+// const apiHost = "http://localhost";
 const port = '9000';
-const apiAddress = new URL(apiHost);
-apiAddress.port = port;
+// const apiAddress = new URL(apiHost);
 
-app.use(cors())
 app.use(express.json())
-app.use('/files', express.static('src/files'))
-// app.use(express.static('../vue/dist'))
+app.use('/files', express.static('./files'))
 app.use(express.static('./vue/dist'))
+app.use(cors())
 
-const buildFileLink = (file) => {
-  const url = new URL(apiAddress.href);
-  url.pathname = `files/${file.filename}`;
-  return url;
-};
 app
   .get('/', async (req, res) => {
     res.sendFile(path.resolve(__dirname, '..', 'vue/dist/index.html'))
@@ -34,11 +27,7 @@ app
       res.json([]);
     }
 
-    const filesWithLink = files.map((file) => {
-      const link = buildFileLink(file);
-      return { ...file, link };
-    })
-    res.json(filesWithLink);
+    res.json(files);
   })
   .get('/simpleField/files', async (req, res) => {
     const file = await prisma.file.findFirst({ where: { isMultiple: false } });
@@ -46,11 +35,12 @@ app
       res.json(null);
       return;
     }
-    const link = buildFileLink(file);
-    const fileWithLink = { ...file, link }
-    res.json(fileWithLink);
+    res.json(file);
   })
   .post('/multipleField/file', upload.array('files'), async (req, res) => {
+    console.log(req.files);
+    console.log(req.body);
+    
     const files = req.files.map(({ filename, originalname }) => {
       return { filename, name: originalname, isMultiple: true };
     })
